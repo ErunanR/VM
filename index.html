@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Valentina - Galería cósmica de flores en una galaxia interactiva">
+  <title>🌸 Valentina - Flores del Cosmos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="starsCanvas"></canvas>
+  <div class="nebula nebula-1"></div>
+  <div class="nebula nebula-2"></div>
+  <div class="nebula nebula-3"></div>
+  <div id="particles"></div>
+
+  <!-- 1. PASSWORD SCREEN -->
+  <div class="password-screen" id="passwordScreen">
+    <div class="password-glow"></div>
+    <div class="password-card">
+      <div class="password-flower">🌻</div>
+      <p class="password-label">Ingresa la clave secreta</p>
+      <div class="password-input-wrap">
+        <input type="password" id="passwordInput" class="password-input" placeholder="✦ ✦ ✦ ✦ ✦" maxlength="10" autocomplete="off">
+        <div class="password-input-glow"></div>
+      </div>
+      <button class="password-btn" id="passwordBtn">Entrar al Cosmos</button>
+      <p class="password-error" id="passwordError">Clave incorrecta ✦</p>
+      <div class="password-stars">
+        <span>✦</span><span>✦</span><span>✦</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. WELCOME ANIMATION -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <div class="welcome-content">
+      <p class="welcome-text" id="welcomeText">Bienvenida</p>
+      <div class="name-letters" id="nameLetters"></div>
+    </div>
+  </div>
+
+  <!-- 3. INTERACTIVE GALAXY -->
+  <div class="galaxy-app" id="galaxyApp">
+    <div class="galaxy-hint" id="galaxyHint">
+      <span>☝️ Arrastra para rotar la galaxia</span>
+    </div>
+    <div class="galaxy-viewport" id="galaxyViewport">
+      <div class="galaxy-scene" id="galaxyScene">
+        <div class="galaxy-core">
+          <div class="core-light"></div>
+        </div>
+        <!-- Orbit rings -->
+        <div class="orbit-ring orbit-ring-1"></div>
+        <div class="orbit-ring orbit-ring-2"></div>
+        <div class="orbit-ring orbit-ring-3"></div>
+        <!-- Flower nodes injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. FLOWER MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modalClose" aria-label="Cerrar"><span>✕</span></button>
+      <div class="modal-image-container">
+        <div class="modal-glow"></div>
+        <img class="modal-image" id="modalImage" src="" alt="">
+      </div>
+      <div class="modal-info">
+        <div class="modal-letter-badge" id="modalBadge"></div>
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-scientific" id="modalScientific"></p>
+        <div class="modal-divider"><span class="divider-star">✦</span></div>
+        <p class="modal-description" id="modalDescription"></p>
+        <div class="modal-tags" id="modalTags"></div>
+      </div>
+      <div class="modal-nebula"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
