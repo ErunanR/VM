@@ -12,6 +12,7 @@
 </head>
 <body>
   <canvas id="starsCanvas"></canvas>
+  <audio id="bgMusic" src="public/audio-editor-output.mp3" loop preload="auto"></audio>
   <div class="nebula nebula-1"></div>
   <div class="nebula nebula-2"></div>
   <div class="nebula nebula-3"></div>
@@ -45,25 +46,47 @@
 
   <!-- 3. INTERACTIVE GALAXY -->
   <div class="galaxy-app" id="galaxyApp">
-    <div class="galaxy-hint" id="galaxyHint">
-      <span>☝️ Arrastra para rotar en 3D</span>
-    </div>
-    
     <div class="galaxy-controls">
       <div class="slider-icon">✦</div>
       <input type="range" id="speedSlider" class="speed-slider" min="0" max="150" value="50" aria-label="Velocidad de rotación">
       <div class="slider-icon">☄️</div>
     </div>
+
+    <button class="info-btn" id="infoBtn" aria-label="Ver instrucciones">
+      <span>?</span>
+    </button>
+
+    <button class="music-btn" id="musicBtn" aria-label="Activar o silenciar música">
+      <span id="musicIcon">♪</span>
+    </button>
+
     <div class="galaxy-viewport" id="galaxyViewport">
-      <div class="galaxy-scene" id="galaxyScene">
-        <div class="galaxy-core">
-          <div class="core-light"></div>
-        </div>
-        <!-- Orbit rings -->
-        <div class="orbit-ring orbit-ring-1"></div>
-        <div class="orbit-ring orbit-ring-2"></div>
-        <div class="orbit-ring orbit-ring-3"></div>
-        <!-- Flower nodes injected by JS -->
+      <canvas id="galaxyCanvas"></canvas>
+    </div>
+
+    <!-- Floating flower name tooltip (follows cursor) -->
+    <div class="flower-tooltip" id="flowerTooltip"></div>
+
+    <!-- 3D loading indicator -->
+    <div class="galaxy-loader" id="galaxyLoader">
+      <div class="loader-orbit"><span class="loader-dot"></span></div>
+      <p class="loader-text">Encendiendo el cosmos…</p>
+    </div>
+
+    <!-- INSTRUCTIONS PANEL -->
+    <div class="instructions" id="instructions">
+      <div class="instructions-card">
+        <button class="instructions-close" id="instructionsClose" aria-label="Cerrar">✕</button>
+        <div class="instructions-icon">🦝</div>
+        <h2 class="instructions-title">Tu galaxia de flores</h2>
+        <ul class="instructions-list">
+          <li><span class="ins-emoji">🖐️</span><span><b>Arrastra</b> para girar la galaxia en 3D</span></li>
+          <li><span class="ins-emoji">🔍</span><span><b>Rueda</b> o <b>pellizca</b> para acercar o alejar</span></li>
+          <li><span class="ins-emoji">🌸</span><span><b>Toca una flor</b> para descubrir su historia</span></li>
+          <li><span class="ins-emoji">🎚️</span><span>Usa el <b>control superior</b> para la velocidad</span></li>
+          <li><span class="ins-emoji">🦝</span><span>Saluda al <b>mapache</b> en el centro</span></li>
+        </ul>
+        <button class="instructions-btn" id="instructionsBtn">Explorar el cosmos ✦</button>
       </div>
     </div>
   </div>
@@ -88,6 +111,13 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
