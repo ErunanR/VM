@@ -34,7 +34,7 @@ const FLOWERS = [
 ];
 
 // ===========================
-// STARS CANVAS
+// STARS CANVAS (Background)
 // ===========================
 class StarField {
   constructor(c) {
@@ -62,29 +62,6 @@ class StarField {
       const o = s.o*(0.3+tw*0.7);
       this.x.beginPath(); this.x.arc(s.x,s.y,s.s,0,Math.PI*2);
       this.x.fillStyle = `rgba(${s.cl},${o})`; this.x.fill();
-      if (s.s > 1.3) {
-        this.x.beginPath(); this.x.arc(s.x,s.y,s.s*3,0,Math.PI*2);
-        this.x.fillStyle = `rgba(${s.cl},${o*0.08})`; this.x.fill();
-      }
-    }
-    if (Math.random() > 0.993) this.shooting.push({
-      x:Math.random()*this.c.width, y:Math.random()*this.c.height*0.5,
-      l:Math.random()*80+40, sp:Math.random()*8+6,
-      a:Math.PI/4+(Math.random()-0.5)*0.3, o:1, life:0
-    });
-    for (let i=this.shooting.length-1;i>=0;i--) {
-      const ss=this.shooting[i];
-      ss.x+=Math.cos(ss.a)*ss.sp; ss.y+=Math.sin(ss.a)*ss.sp;
-      ss.life++; ss.o=Math.max(0,1-ss.life/40);
-      if(ss.o<=0){this.shooting.splice(i,1);continue;}
-      const tx=ss.x-Math.cos(ss.a)*ss.l, ty=ss.y-Math.sin(ss.a)*ss.l;
-      const g=this.x.createLinearGradient(tx,ty,ss.x,ss.y);
-      g.addColorStop(0,`rgba(255,255,255,0)`);
-      g.addColorStop(1,`rgba(255,255,255,${ss.o})`);
-      this.x.beginPath(); this.x.moveTo(tx,ty); this.x.lineTo(ss.x,ss.y);
-      this.x.strokeStyle=g; this.x.lineWidth=1.5; this.x.stroke();
-      this.x.beginPath(); this.x.arc(ss.x,ss.y,2,0,Math.PI*2);
-      this.x.fillStyle=`rgba(255,255,255,${ss.o})`; this.x.fill();
     }
   }
 }
@@ -172,18 +149,24 @@ function startWelcome() {
 }
 
 // ===========================
-// GALAXY — 2D Orbital System
+// TRUE 3D GALAXY SYSTEM
 // ===========================
-// Flowers orbit in 2D circles; we apply a perspective tilt via CSS on the container.
-// Each flower node counter-rotates so the photo always faces the viewer.
+let galaxyRotX = -15;       // Camera tilt (X-axis)
+let galaxyRotY = 0;         // Camera rotation (Y-axis)
+let galaxyOrbitAngle = 0;   // The continuous orbit rotation
+let galaxyScale = 1;        // Zoom level
+let orbitSpeedMultiplier = 0.5; // Controlled by slider
 
-let galaxyAngle = 0;       // current Y-rotation (degrees)
-let galaxyTilt = -30;       // tilt (X-rotation)
 let autoRotate = true;
 let dragging = false;
+let isClickPrevented = false; // Prevents clicks after dragging
+let dragStartX = 0;
+let dragStartY = 0;
 let lastPointer = { x: 0, y: 0 };
 let velocity = { x: 0, y: 0 };
-let flowerNodes = [];       // { el, angle, orbit, radius }
+let flowerNodes = [];       
+let initialPinchDistance = null;
+let initialScale = 1;
 
 function showGalaxy() {
   const app = document.getElementById('galaxyApp');
@@ -195,38 +178,37 @@ function showGalaxy() {
 }
 
 function getRadiusMultiplier() {
-  if (innerWidth <= 420) return 0.52;
-  if (innerWidth <= 768) return 0.7;
+  if (innerWidth <= 420) return 0.55;
+  if (innerWidth <= 768) return 0.75;
   return 1;
 }
 
 function buildGalaxy() {
   const scene = document.getElementById('galaxyScene');
   flowerNodes = [];
-
   const rm = getRadiusMultiplier();
 
-  // 3 orbits
+  // 3 concentric orbits
   const orbits = [
-    { radius: 130 * rm, count: 4, startIdx: 0, speed: 1 },
-    { radius: 200 * rm, count: 5, startIdx: 4, speed: 0.7 },
-    { radius: 265 * rm, count: 5, startIdx: 9, speed: 0.5 }
+    { radius: 150 * rm, count: 4, startIdx: 0, speed: 1.2 },
+    { radius: 240 * rm, count: 5, startIdx: 4, speed: 0.8 },
+    { radius: 330 * rm, count: 5, startIdx: 9, speed: 0.5 }
   ];
 
-  orbits.forEach((orbit, oi) => {
+  orbits.forEach((orbit) => {
     for (let i = 0; i < orbit.count; i++) {
       const fIdx = orbit.startIdx + i;
       if (fIdx >= FLOWERS.length) break;
       const flower = FLOWERS[fIdx];
 
-      // Base angle evenly distributed
+      // Base angle in degrees for evenly spacing them on the ring
       const baseAngle = (i / orbit.count) * 360;
 
       const node = document.createElement('div');
       node.classList.add('flower-node');
       node.style.setProperty('--fc', flower.color);
 
-      // Letter label
+      // We separate the 'inner' element to apply inverse rotation (billboard effect)
       let letterHTML = '';
       if (flower.li !== null && flower.li !== undefined) {
         const lt = VALENTINA[flower.li];
@@ -234,75 +216,57 @@ function buildGalaxy() {
       }
 
       node.innerHTML = `
-        <img class="flower-node-img" src="${flower.image}" alt="${flower.name}" loading="lazy">
-        <div class="flower-node-glow"></div>
-        <span class="flower-node-name">${flower.name}</span>
-        ${letterHTML}
+        <div class="flower-node-inner">
+          <img class="flower-node-img" src="${flower.image}" alt="${flower.name}" loading="lazy">
+          <div class="flower-node-glow"></div>
+          <span class="flower-node-name">${flower.name}</span>
+          ${letterHTML}
+        </div>
       `;
 
-      // custom click logic to prevent drag collisions
-      let isDragging = false;
-      let startX = 0; let startY = 0;
-
-      node.addEventListener('pointerdown', (e) => {
-        isDragging = false;
-        startX = e.clientX;
-        startY = e.clientY;
-      });
-      
-      node.addEventListener('pointermove', (e) => {
-        if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
-          isDragging = true;
-        }
-      });
-      
-      node.addEventListener('pointerup', (e) => {
-        if (!isDragging) {
-          e.stopPropagation();
-          openModal(flower);
-        }
+      // Reliable click event (checks global drag flag)
+      node.addEventListener('click', (e) => {
+        if (isClickPrevented) return;
+        e.stopPropagation();
+        openModal(flower);
       });
 
       scene.appendChild(node);
-
+      
+      const innerEl = node.querySelector('.flower-node-inner');
+      
       flowerNodes.push({
         el: node,
+        innerEl: innerEl,
         baseAngle: baseAngle,
         radius: orbit.radius,
-        speed: orbit.speed,
-        orbitIndex: oi
+        speed: orbit.speed
       });
     }
   });
 }
 
-let galaxyScale = 1;
-let initialPinchDistance = null;
-let initialScale = 1;
-
-function updateFlowerPositions() {
+function update3DPositions() {
   const scene = document.getElementById('galaxyScene');
-  const tiltRad = (galaxyTilt * Math.PI) / 180;
 
-  // Scale the entire scene for zoom
-  scene.style.transform = `scale(${galaxyScale})`;
+  // 1. Apply camera rotation and zoom to the entire scene
+  scene.style.transform = `scale(${galaxyScale}) rotateX(${galaxyRotX}deg) rotateY(${galaxyRotY}deg)`;
 
+  // 2. Calculate orbit positions and apply billboard effect to each flower
   flowerNodes.forEach(fn => {
-    const totalAngle = fn.baseAngle + galaxyAngle * fn.speed;
-    const rad = (totalAngle * Math.PI) / 180;
-
-    // 2D circle, tilted in perspective
+    // Current angle in the orbit
+    const currentAngle = fn.baseAngle + (galaxyOrbitAngle * fn.speed);
+    const rad = (currentAngle * Math.PI) / 180;
+    
+    // Position in 3D space (orbiting on the X-Z plane, Y=0)
     const x = Math.cos(rad) * fn.radius;
-    const y = Math.sin(rad) * fn.radius * Math.sin(tiltRad + Math.PI / 2);
-    const z = Math.sin(rad) * fn.radius * Math.cos(tiltRad + Math.PI / 2);
+    const z = Math.sin(rad) * fn.radius;
+    
+    fn.el.style.transform = `translate3d(${x}px, 0px, ${z}px)`;
 
-    // Scale based on z-depth for 3D feel
-    const depthScale = 0.6 + 0.4 * ((z + fn.radius) / (fn.radius * 2));
-    const opacity = 0.5 + 0.5 * ((z + fn.radius) / (fn.radius * 2));
-
-    fn.el.style.transform = `translate(${x}px, ${y}px) scale(${depthScale})`;
-    fn.el.style.zIndex = Math.round(z + 500);
-    fn.el.style.opacity = opacity;
+    // BILLBOARD EFFECT: Reverse the scene's rotation so the image always faces the camera
+    // We reverse Y first, then X (opposite order of the scene's rotation)
+    fn.innerEl.style.transform = `rotateY(${-galaxyRotY}deg) rotateX(${-galaxyRotX}deg)`;
   });
 }
 
@@ -323,21 +287,25 @@ function initGalaxyInteraction() {
     }
     
     dragging = true;
+    isClickPrevented = false; // Reset on down
     autoRotate = false;
     velocity = { x: 0, y: 0 };
+    
     const point = e.touches ? e.touches[0] : e;
     lastPointer = { x: point.clientX, y: point.clientY };
+    dragStartX = point.clientX;
+    dragStartY = point.clientY;
     viewport.style.cursor = 'grabbing';
   }
 
   function onPointerMove(e) {
     if (e.touches && e.touches.length === 2 && initialPinchDistance) {
-      // Pinch to zoom
+      // Multi-touch Pinch to zoom
       e.preventDefault();
       const currentDistance = getDistance(e.touches);
       const scaleChange = currentDistance / initialPinchDistance;
       galaxyScale = initialScale * scaleChange;
-      galaxyScale = Math.max(0.4, Math.min(2.5, galaxyScale));
+      galaxyScale = Math.max(0.3, Math.min(3.0, galaxyScale));
       return;
     }
 
@@ -345,12 +313,23 @@ function initGalaxyInteraction() {
     const point = e.touches ? e.touches[0] : e;
     const dx = point.clientX - lastPointer.x;
     const dy = point.clientY - lastPointer.y;
+    
+    // If moved more than 5px, it's definitely a drag, not a click
+    if (Math.abs(point.clientX - dragStartX) > 5 || Math.abs(point.clientY - dragStartY) > 5) {
+      isClickPrevented = true;
+    }
 
-    galaxyAngle += dx * (0.5 / galaxyScale);
-    galaxyTilt += dy * (0.3 / galaxyScale);
-    galaxyTilt = Math.max(-80, Math.min(-5, galaxyTilt));
+    // Adjust sensitivity based on scale (zoom)
+    const sensX = 0.5 / galaxyScale;
+    const sensY = 0.5 / galaxyScale;
 
-    velocity = { x: dx * (0.5 / galaxyScale), y: dy * (0.3 / galaxyScale) };
+    galaxyRotY += dx * sensX;
+    galaxyRotX -= dy * sensY; // Minus because dragging down should rotate scene up
+    
+    // Limit X rotation so you don't go completely upside down, but give freedom
+    galaxyRotX = Math.max(-85, Math.min(85, galaxyRotX));
+
+    velocity = { x: dx * sensX, y: -dy * sensY };
     lastPointer = { x: point.clientX, y: point.clientY };
   }
 
@@ -363,45 +342,72 @@ function initGalaxyInteraction() {
       dragging = false;
       viewport.style.cursor = 'grab';
       applyInertia();
+      
+      // Clear the click prevention flag after a tiny delay so the click event has time to fire and be blocked
+      setTimeout(() => {
+        isClickPrevented = false;
+      }, 50);
     }
   }
 
   function applyInertia() {
     if (dragging) return;
     if (Math.abs(velocity.x) < 0.05 && Math.abs(velocity.y) < 0.05) {
-      setTimeout(() => { autoRotate = true; }, 2000);
+      setTimeout(() => { autoRotate = true; }, 1000);
       return;
     }
-    galaxyAngle += velocity.x;
-    galaxyTilt += velocity.y;
-    galaxyTilt = Math.max(-80, Math.min(-5, galaxyTilt));
-    velocity.x *= 0.94;
-    velocity.y *= 0.94;
+    galaxyRotY += velocity.x;
+    galaxyRotX += velocity.y;
+    galaxyRotX = Math.max(-85, Math.min(85, galaxyRotX));
+    
+    velocity.x *= 0.93;
+    velocity.y *= 0.93;
     requestAnimationFrame(applyInertia);
   }
 
-  viewport.addEventListener('mousedown', onPointerDown);
-  window.addEventListener('mousemove', onPointerMove);
-  window.addEventListener('mouseup', onPointerUp);
-  viewport.addEventListener('touchstart', onPointerDown, { passive: true });
-  window.addEventListener('touchmove', onPointerMove, { passive: false });
-  window.addEventListener('touchend', onPointerUp);
+  // Use Pointer Events for seamless mouse/touch support without preventing scroll randomly
+  viewport.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove, { passive: false });
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
+
+  // Fallback for touch pinch-zoom strictly (pointer events handle one finger drag perfectly)
+  viewport.addEventListener('touchstart', (e) => {
+    if(e.touches.length === 2) onPointerDown(e);
+  }, { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    if(e.touches.length === 2) onPointerMove(e);
+  }, { passive: false });
 
   // Mouse wheel zoom
   viewport.addEventListener('wheel', (e) => {
     e.preventDefault();
     const zoomSpeed = 0.0015;
     galaxyScale -= e.deltaY * zoomSpeed;
-    galaxyScale = Math.max(0.4, Math.min(2.5, galaxyScale));
+    galaxyScale = Math.max(0.3, Math.min(3.0, galaxyScale));
   }, { passive: false });
+}
+
+function initSpeedSlider() {
+  const slider = document.getElementById('speedSlider');
+  if (!slider) return;
+  slider.addEventListener('input', (e) => {
+    // Map 0-100 to 0 - 1.5 speed multiplier
+    const val = parseInt(e.target.value);
+    orbitSpeedMultiplier = val / 100;
+  });
 }
 
 function startGalaxyLoop() {
   function tick() {
     if (autoRotate && !dragging) {
-      galaxyAngle += 0.2;
+      // Automatically slowly spin the camera for a cinematic feel
+      galaxyRotY += 0.05;
     }
-    updateFlowerPositions();
+    // Always advance the orbit of the planets based on the slider speed
+    galaxyOrbitAngle += orbitSpeedMultiplier;
+    
+    update3DPositions();
     requestAnimationFrame(tick);
   }
   tick();
@@ -463,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   buildLetterCards();
   buildGalaxy();
+  initSpeedSlider();
   initGalaxyInteraction();
   startGalaxyLoop();
   initPassword();

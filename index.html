@@ -46,7 +46,13 @@
   <!-- 3. INTERACTIVE GALAXY -->
   <div class="galaxy-app" id="galaxyApp">
     <div class="galaxy-hint" id="galaxyHint">
-      <span>☝️ Arrastra para rotar la galaxia</span>
+      <span>☝️ Arrastra para rotar en 3D</span>
+    </div>
+    
+    <div class="galaxy-controls">
+      <div class="slider-icon">✦</div>
+      <input type="range" id="speedSlider" class="speed-slider" min="0" max="150" value="50" aria-label="Velocidad de rotación">
+      <div class="slider-icon">☄️</div>
     </div>
     <div class="galaxy-viewport" id="galaxyViewport">
       <div class="galaxy-scene" id="galaxyScene">
