@@ -240,9 +240,27 @@ function buildGalaxy() {
         ${letterHTML}
       `;
 
-      node.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openModal(flower);
+      // custom click logic to prevent drag collisions
+      let isDragging = false;
+      let startX = 0; let startY = 0;
+
+      node.addEventListener('pointerdown', (e) => {
+        isDragging = false;
+        startX = e.clientX;
+        startY = e.clientY;
+      });
+      
+      node.addEventListener('pointermove', (e) => {
+        if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+          isDragging = true;
+        }
+      });
+      
+      node.addEventListener('pointerup', (e) => {
+        if (!isDragging) {
+          e.stopPropagation();
+          openModal(flower);
+        }
       });
 
       scene.appendChild(node);
@@ -285,7 +303,6 @@ function updateFlowerPositions() {
     fn.el.style.transform = `translate(${x}px, ${y}px) scale(${depthScale})`;
     fn.el.style.zIndex = Math.round(z + 500);
     fn.el.style.opacity = opacity;
-    fn.el.style.filter = `brightness(${0.5 + 0.5 * depthScale})`;
   });
 }
 

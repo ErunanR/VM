@@ -246,6 +246,7 @@ body {
   cursor:grab;
   position:relative;
   overflow:hidden;
+  touch-action:none;
 }
 .galaxy-viewport:active { cursor:grabbing; }
 
