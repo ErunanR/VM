@@ -291,6 +291,8 @@ body {
    ==================================== */
 .flower-node {
   position:absolute;
+  top:50%; left:50%;
+  margin:-36px 0 0 -36px;
   width:72px; height:72px;
   border-radius:50%;
   overflow:visible;
@@ -475,7 +477,7 @@ body {
   .orbit-ring-1 { width:200px; height:200px; margin:-100px 0 0 -100px; }
   .orbit-ring-2 { width:310px; height:310px; margin:-155px 0 0 -155px; }
   .orbit-ring-3 { width:400px; height:400px; margin:-200px 0 0 -200px; }
-  .flower-node { width:58px; height:58px; }
+  .flower-node { width:58px; height:58px; margin:-29px 0 0 -29px; }
   .flower-node-letter { font-size:0.55rem; bottom:-16px; }
   .flower-node-name { font-size:0.55rem; top:-24px; padding:3px 8px; }
   .modal { max-width:95vw; border-radius:20px; }
@@ -493,7 +495,7 @@ body {
   .orbit-ring-1 { width:160px; height:160px; margin:-80px 0 0 -80px; }
   .orbit-ring-2 { width:250px; height:250px; margin:-125px 0 0 -125px; }
   .orbit-ring-3 { width:320px; height:320px; margin:-160px 0 0 -160px; }
-  .flower-node { width:46px; height:46px; }
+  .flower-node { width:46px; height:46px; margin:-23px 0 0 -23px; }
   .flower-node-letter { font-size:0.5rem; bottom:-14px; }
   .flower-node-name { display:none; }
   .letter-card { width:clamp(32px,9vw,40px); height:clamp(44px,13vw,55px); border-radius:10px; }
@@ -511,7 +513,7 @@ body {
 
 /* Extra small (iPhone SE, etc) */
 @media (max-width:360px) {
-  .flower-node { width:40px; height:40px; }
+  .flower-node { width:40px; height:40px; margin:-20px 0 0 -20px; }
   .letter-card { width:30px; height:42px; }
   .letter-char { font-size:1rem; }
 }
