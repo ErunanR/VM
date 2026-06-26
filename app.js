@@ -23,20 +23,20 @@ const VALENTINA = [
 // FLOWER DATA — 14 photos
 // ===========================
 const FLOWERS = [
-  { id:1, name:"Rosa Roja Nocturna", scientific:"Rosa × hybrid", image:"public/WhatsApp Image 2026-06-08 at 11.15.01 PM.jpeg", description:"Rosa roja capturada bajo la luz de la noche, con gotas de rocío sobre sus pétalos aterciopelados. Es símbolo universal del amor apasionado.", tags:["Amor","Nocturna","Rocío"], color:"#ff2d55", li:0 },
-  { id:2, name:"Margarita Africana", scientific:"Osteospermum ecklonis", image:"public/WhatsApp Image 2026-06-11 at 6.28.13 AM.jpeg", description:"La margarita africana deslumbra con sus pétalos púrpura-magenta y un centro oscuro hipnótico. Originaria de Sudáfrica.", tags:["Africana","Púrpura","Resistente"], color:"#c430cc", li:1 },
-  { id:3, name:"Rosa Rosa del Amanecer", scientific:"Rosa × centifolia", image:"public/WhatsApp Image 2026-06-12 at 6.47.53 AM.jpeg", description:"Una rosa rosa con gotas de lluvia que parecen diamantes sobre sus pétalos. Famosa por su fragancia dulce y delicada.", tags:["Elegante","Fragante","Lluvia"], color:"#ff6b8a", li:2 },
-  { id:4, name:"Margarita Cósmica", scientific:"Tanacetum parthenium", image:"public/WhatsApp Image 2026-06-13 at 6.21.02 AM.jpeg", description:"Margaritas blancas puras con centro dorado, agrupadas como pequeñas constelaciones. Cada 'flor' son cientos de flores agrupadas.", tags:["Pureza","Medicinal","Constelación"], color:"#ffd700", li:3 },
-  { id:5, name:"Girasol y Gatito Estelar", scientific:"Helianthus annuus", image:"public/WhatsApp Image 2026-06-14 at 6.52.55 AM.jpeg", description:"Un girasol acompañado por un tierno gatito. El girasol sigue al sol mediante heliotropismo. Espirales de Fibonacci.", tags:["Solar","Gatito","Fibonacci"], color:"#ffb300", li:4 },
-  { id:6, name:"Hibisco del Atardecer", scientific:"Hibiscus rosa-sinensis", image:"public/WhatsApp Image 2026-06-15 at 6.25.45 AM.jpeg", description:"Un hibisco rosa-salmón con estambres dorados contra un cielo azul tropical. Cada flor dura solo un día.", tags:["Tropical","Efímera","Atardecer"], color:"#ff8a80", li:5 },
-  { id:7, name:"Margarita Africana Estelar", scientific:"Osteospermum ecklonis", image:"public/WhatsApp Image 2026-06-18 at 11.20.17 AM.jpeg", description:"Primer plano espectacular de la margarita africana magenta. Pétalos del rosa intenso al púrpura profundo.", tags:["Magenta","Macro","Sudáfrica"], color:"#e91e8c", li:6 },
-  { id:8, name:"Thunbergia Solar", scientific:"Thunbergia alata", image:"public/WhatsApp Image 2026-06-19 at 10.10.32 AM.jpeg", description:"La Susana de ojos negros brilla con pétalos naranja vibrante y un centro oscuro como un eclipse.", tags:["Naranja","Trepadora","Alegría"], color:"#ff8c00", li:7 },
-  { id:9, name:"Tibouchina Galáctica", scientific:"Tibouchina urvilleana", image:"public/WhatsApp Image 2026-06-20 at 5.33.59 PM.jpeg", description:"La flor de la princesa con pétalos violeta intenso y sépalos rojizos aterciopelados. Originaria de Brasil.", tags:["Violeta","Brasil","Terciopelo"], color:"#8a2be2", li:8 },
-  { id:10, name:"Lantana Arcoíris", scientific:"Lantana camara", image:"public/WhatsApp Image 2026-06-21 at 8.34.50 AM.jpeg", description:"La lantana despliega un arcoíris: amarillo, naranja, rosa y rojo en la misma inflorescencia. Cambian de color al madurar.", tags:["Multicolor","Mariposas","Cambiante"], color:"#ff6347", li:null },
-  { id:11, name:"Dalia Supernova", scientific:"Dahlia × hortensis", image:"public/WhatsApp Image 2026-06-23 at 6.26.32 AM.jpeg", description:"La dalia muestra pétalos magenta en espiral perfecta. Flor nacional de México, cultivada por los aztecas.", tags:["México","Espiral","Supernova"], color:"#dc143c", li:null },
-  { id:12, name:"Azalea Lunar", scientific:"Rhododendron indicum", image:"public/WhatsApp Image 2026-06-23 at 8.29.32 PM.jpeg", description:"La azalea violeta-lila ilumina cualquier jardín. Símbolo de feminidad y templanza en Asia.", tags:["Lila","Delicada","Asia"], color:"#ba55d3", li:null },
-  { id:13, name:"Geranio Nebulosa", scientific:"Pelargonium × hortorum", image:"public/WhatsApp Image 2026-06-24 at 6.44.54 AM.jpeg", description:"Geranios rosa intenso con gotas de rocío. Son las flores más populares de los balcones del mundo.", tags:["Balcones","Fragante","Rosa"], color:"#ff1493", li:null },
-  { id:14, name:"Zinnia Cósmica", scientific:"Zinnia elegans", image:"public/WhatsApp Image 2026-06-25 at 7.27.50 AM.jpeg", description:"La zinnia magenta fue la primera flor cultivada en el espacio (2016, Estación Espacial Internacional).", tags:["Espacial","Amistad","NASA"], color:"#ff0066", li:null }
+  { id:1, name:"Rosa Roja Nocturna", scientific:"Rosa × hybrid", image:"public/WhatsApp Image 2026-06-08 at 11.15.01 PM.jpeg", description:"Pertenece a la familia Rosaceae, pariente de manzanas, peras y almendras. Lo que llamamos espinas son en realidad 'aguijones' de la corteza.", tags:["Rosaceae","Aguijones","+300 especies"], color:"#ff2d55", li:0 },
+  { id:2, name:"Margarita Africana", scientific:"Osteospermum ecklonis", image:"public/WhatsApp Image 2026-06-11 at 6.28.13 AM.jpeg", description:"Originaria de Sudáfrica. Sus pétalos se cierran de noche y con el cielo nublado, y vuelven a abrirse con el sol.", tags:["Sudáfrica","Fotosensible","Perenne"], color:"#c430cc", li:1 },
+  { id:3, name:"Rosa Rosa del Amanecer", scientific:"Rosa × centifolia", image:"public/WhatsApp Image 2026-06-12 at 6.47.53 AM.jpeg", description:"Conocida como 'rosa de los cien pétalos'. Se cultiva en Grasse (Francia) para fabricar perfumes desde el siglo XVI.", tags:["Centifolia","Perfumería","Grasse"], color:"#ff6b8a", li:2 },
+  { id:4, name:"Margarita Cósmica", scientific:"Tanacetum parthenium", image:"public/WhatsApp Image 2026-06-13 at 6.21.02 AM.jpeg", description:"Cada 'flor' es en realidad un ramo de cientos de flores diminutas. Se ha usado tradicionalmente contra la fiebre y la migraña.", tags:["Inflorescencia","Asteraceae","Medicinal"], color:"#ffd700", li:3 },
+  { id:5, name:"Girasol y Gatito Estelar", scientific:"Helianthus annuus", image:"public/WhatsApp Image 2026-06-14 at 6.52.55 AM.jpeg", description:"Los girasoles jóvenes siguen al sol (heliotropismo). Sus semillas se ordenan en espirales de Fibonacci: a menudo 34, 55 u 89.", tags:["Heliotropismo","Fibonacci","Comestible"], color:"#ffb300", li:4 },
+  { id:6, name:"Hibisco del Atardecer", scientific:"Hibiscus rosa-sinensis", image:"public/WhatsApp Image 2026-06-15 at 6.25.45 AM.jpeg", description:"Cada flor vive un solo día. Con sus pétalos se elaboran tintes naturales y cosméticos para el cabello en Asia.", tags:["Efímera","Tropical","Tinte"], color:"#ff8a80", li:5 },
+  { id:7, name:"Margarita Africana Estelar", scientific:"Osteospermum ecklonis", image:"public/WhatsApp Image 2026-06-18 at 11.20.17 AM.jpeg", description:"Su centro oscuro está formado por decenas de flores fértiles. Es una de las margaritas con más variedades de color por hibridación.", tags:["Asteraceae","Híbrida","Sudáfrica"], color:"#e91e8c", li:6 },
+  { id:8, name:"Thunbergia Solar", scientific:"Thunbergia alata", image:"public/WhatsApp Image 2026-06-19 at 10.10.32 AM.jpeg", description:"Trepadora de crecimiento rápido originaria de África oriental; puede escalar 2 o 3 metros en una sola temporada.", tags:["Trepadora","África","Rápida"], color:"#ff8c00", li:7 },
+  { id:9, name:"Tibouchina Galáctica", scientific:"Tibouchina urvilleana", image:"public/WhatsApp Image 2026-06-20 at 5.33.59 PM.jpeg", description:"Originaria de Brasil. Sus pétalos violeta intenso y sus estambres curvos en forma de araña la hacen inconfundible.", tags:["Brasil","Estambres","Arbusto"], color:"#8a2be2", li:8 },
+  { id:10, name:"Lantana Arcoíris", scientific:"Lantana camara", image:"public/WhatsApp Image 2026-06-21 at 8.34.50 AM.jpeg", description:"Cambia de color a medida que madura, por eso una sola mata muestra varios tonos. Atrae mariposas y es invasora en muchos países.", tags:["Cambia color","Mariposas","Invasora"], color:"#ff6347", li:null },
+  { id:11, name:"Dalia Supernova", scientific:"Dahlia × hortensis", image:"public/WhatsApp Image 2026-06-23 at 6.26.32 AM.jpeg", description:"Flor nacional de México, cultivada por los aztecas. Sus tubérculos son comestibles y existen más de 40.000 variedades registradas.", tags:["México","Comestible","+40.000 var."], color:"#dc143c", li:null },
+  { id:12, name:"Azalea Lunar", scientific:"Rhododendron indicum", image:"public/WhatsApp Image 2026-06-23 at 8.29.32 PM.jpeg", description:"Las azaleas son un tipo de rododendro. Algunos ejemplares superan los 100 años, aunque toda la planta es tóxica si se ingiere.", tags:["Rododendro","Longeva","Tóxica"], color:"#ba55d3", li:null },
+  { id:13, name:"Geranio Nebulosa", scientific:"Pelargonium × hortorum", image:"public/WhatsApp Image 2026-06-24 at 6.44.54 AM.jpeg", description:"En realidad es un pelargonio, no un geranio verdadero. Sus hojas aromáticas pueden oler a rosa, limón o menta y se usan en perfumería.", tags:["Pelargonio","Aromática","Perfumería"], color:"#ff1493", li:null },
+  { id:14, name:"Zinnia Cósmica", scientific:"Zinnia elegans", image:"public/WhatsApp Image 2026-06-25 at 7.27.50 AM.jpeg", description:"En 2016 fue la primera flor en florecer en el espacio, a bordo de la Estación Espacial Internacional. Es originaria de México.", tags:["Espacio","ISS 2016","México"], color:"#ff0066", li:null }
 ];
 
 // ===========================
@@ -171,7 +171,7 @@ const Galaxy = {
   pointerActive: false,
   last: { x: 0, y: 0 },
   pinchDist: null,
-  orbitSpeed: 0.5,
+  orbitSpeed: 0.2,
   hovered: null,
   started: false
 };
@@ -545,6 +545,12 @@ function initGalaxyInteraction(canvas) {
     return Math.hypot(dx, dy);
   };
 
+  function setPointer(p) {
+    if (!p || typeof p.clientX !== 'number') return;
+    G.pointer.x = (p.clientX / window.innerWidth) * 2 - 1;
+    G.pointer.y = -(p.clientY / window.innerHeight) * 2 + 1;
+  }
+
   function down(e) {
     if (e.touches && e.touches.length === 2) {
       G.pinchDist = dist2(e.touches);
@@ -555,6 +561,7 @@ function initGalaxyInteraction(canvas) {
     G.autoRotate = false;
     const p = e.touches ? e.touches[0] : e;
     G.last = { x: p.clientX, y: p.clientY };
+    setPointer(p); // keep raycaster fresh for taps with no move event
     canvas.style.cursor = 'grabbing';
   }
 
@@ -577,7 +584,7 @@ function initGalaxyInteraction(canvas) {
     if (!G.dragging) return;
     const dx = p.clientX - G.last.x;
     const dy = p.clientY - G.last.y;
-    if (Math.abs(dx) + Math.abs(dy) > 4) G.moved = true;
+    if (Math.abs(dx) + Math.abs(dy) > 8) G.moved = true; // forgiving for finger jitter
 
     G.target.theta -= dx * 0.006;
     G.target.phi -= dy * 0.006;
@@ -590,8 +597,12 @@ function initGalaxyInteraction(canvas) {
     if (!G.dragging) return;
     G.dragging = false;
     canvas.style.cursor = 'grab';
-    // tap / click (not a drag) -> try to open a flower
-    if (!G.moved) handleClick();
+    // tap / click (not a drag) -> try to open a flower (use the release position)
+    if (!G.moved) {
+      const p = (e.touches && e.touches[0]) ? e.touches[0] : (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : e;
+      setPointer(p);
+      handleClick();
+    }
     setTimeout(() => { if (!G.dragging) G.autoRotate = true; }, 2500);
   }
 
@@ -612,14 +623,25 @@ function initGalaxyInteraction(canvas) {
   canvas.addEventListener('pointerleave', () => { G.pointerActive = false; G.pointer.set(-2, -2); });
 }
 
+const _projV = new THREE.Vector3();
 function handleClick() {
   const G = Galaxy;
-  G.raycaster.setFromCamera(G.pointer, G.camera);
-  const hits = G.raycaster.intersectObjects(G.flowerSprites.map(f => f.sprite));
-  if (hits.length) {
-    const found = G.flowerSprites.find(f => f.sprite === hits[0].object);
-    if (found) openModal(found.flower);
-  }
+  const tapX = (G.pointer.x + 1) / 2 * window.innerWidth;
+  const tapY = (-G.pointer.y + 1) / 2 * window.innerHeight;
+  // Generous screen-space pick: forgiving on touch where sprites are small targets.
+  const hitR = window.innerWidth < 600 ? 64 : 46;
+  let best = null, bestZ = Infinity;
+  G.flowerSprites.forEach(f => {
+    if (f.opacity < 0.5) return; // not yet loaded / visible
+    _projV.copy(f.sprite.position).project(G.camera);
+    if (_projV.z > 1) return; // behind camera
+    const sx = (_projV.x + 1) / 2 * window.innerWidth;
+    const sy = (-_projV.y + 1) / 2 * window.innerHeight;
+    if (Math.hypot(sx - tapX, sy - tapY) > hitR) return;
+    // among candidates near the tap, choose the one closest to the camera (frontmost)
+    if (_projV.z < bestZ) { bestZ = _projV.z; best = f; }
+  });
+  if (best) openModal(best.flower);
 }
 
 function updateHover() {
@@ -777,7 +799,7 @@ function initInstructions() {
 // ===========================
 // BACKGROUND MUSIC (subtle)
 // ===========================
-const MUSIC = { audio: null, target: 0.22, on: true, started: false };
+const MUSIC = { audio: null, target: 0.11, on: true, started: false };
 
 function startMusic() {
   const a = MUSIC.audio;
