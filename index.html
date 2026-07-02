@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="Valentina - Galería cósmica de flores en una galaxia interactiva">
-  <title>Flores</title>
+  <meta name="description" content="Valentina — Una galaxia cósmica interactiva de flores. Explora constelaciones de belleza en 3D.">
+  <meta name="theme-color" content="#050510">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>✦ Valentina — Galería Cósmica</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🌻</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,6 +16,7 @@
 </head>
 <body>
   <canvas id="starsCanvas"></canvas>
+  <canvas id="particlesCanvas"></canvas>
   <audio id="bgMusic" src="public/audio-editor-output.mp3" loop preload="auto"></audio>
   <div class="nebula nebula-1"></div>
   <div class="nebula nebula-2"></div>
@@ -21,7 +26,7 @@
   <!-- 1. PASSWORD SCREEN -->
   <div class="password-screen" id="passwordScreen">
     <div class="password-glow"></div>
-    <div class="password-card">
+    <div class="password-card" id="passwordCard">
       <div class="password-flower">🌻</div>
       <p class="password-label">Ingresa la clave secreta</p>
       <div class="password-input-wrap">
@@ -38,9 +43,10 @@
 
   <!-- 2. WELCOME ANIMATION -->
   <div class="welcome-screen" id="welcomeScreen">
-    <div class="welcome-content">
-      <p class="welcome-text" id="welcomeText">Bienvenida</p>
+    <div class="welcome-content" id="welcomeContent">
+      <p class="welcome-text" id="welcomeText"></p>
       <div class="name-letters" id="nameLetters"></div>
+      <svg class="constellation-overlay" id="constellationSvg"></svg>
     </div>
   </div>
 
@@ -103,9 +109,21 @@
         <div class="modal-letter-badge" id="modalBadge"></div>
         <h2 class="modal-title" id="modalTitle"></h2>
         <p class="modal-scientific" id="modalScientific"></p>
-        <div class="modal-divider"><span class="divider-star">✦</span></div>
+        <div class="modal-divider">
+          <span class="divider-star">✦</span>
+          <span class="divider-slide"></span>
+        </div>
         <p class="modal-description" id="modalDescription"></p>
         <div class="modal-tags" id="modalTags"></div>
+        <div class="modal-nav">
+          <button class="modal-nav-btn prev" id="modalPrev">
+            <span class="arrow">←</span> Anterior
+          </button>
+          <span class="modal-counter" id="modalCounter"></span>
+          <button class="modal-nav-btn next" id="modalNext">
+            Siguiente <span class="arrow">→</span>
+          </button>
+        </div>
       </div>
       <div class="modal-nebula"></div>
     </div>

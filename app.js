@@ -1,5 +1,6 @@
 // ===========================
 // VALENTINA — 3D COSMIC GALLERY
+// Premium Upgrade v2
 // Powered by Three.js (WebGL)
 // ===========================
 import * as THREE from 'three';
@@ -40,6 +41,26 @@ const FLOWERS = [
 ];
 
 // ===========================
+// PERFORMANCE DETECTION
+// ===========================
+const PERF = {
+  isLow: false,
+  isMobile: /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768
+};
+// Simple GPU check: if canvas is tiny on a mobile device, reduce effects
+try {
+  const testCanvas = document.createElement('canvas');
+  const gl = testCanvas.getContext('webgl');
+  if (gl) {
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    if (dbg) {
+      const renderer = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).toLowerCase();
+      PERF.isLow = /mali-4|adreno 3|powervr sgx/i.test(renderer);
+    }
+  }
+} catch(e) {}
+
+// ===========================
 // 2D STAR FIELD (deep background)
 // ===========================
 class StarField {
@@ -52,11 +73,11 @@ class StarField {
   resize() { this.c.width = innerWidth; this.c.height = innerHeight; }
   init() {
     this.stars = [];
-    const n = Math.min(280, Math.floor((innerWidth * innerHeight) / 4500));
+    const n = Math.min(320, Math.floor((innerWidth * innerHeight) / 4000));
     const cols = ['240,234,255','255,212,232','200,200,255','255,224,102','180,180,255','255,180,220'];
     for (let i = 0; i < n; i++) this.stars.push({
       x: Math.random()*this.c.width, y: Math.random()*this.c.height,
-      s: Math.random()*2.0+0.2, o: Math.random()*0.8+0.2,
+      s: Math.random()*2.2+0.2, o: Math.random()*0.8+0.2,
       ts: Math.random()*0.02+0.005, to: Math.random()*Math.PI*2,
       cl: cols[Math.floor(Math.random()*cols.length)]
     });
@@ -73,21 +94,206 @@ class StarField {
 }
 
 // ===========================
-// CSS PARTICLES
+// CANVAS PARTICLES SYSTEM (upgraded from CSS)
 // ===========================
-function createParticles() {
-  const ct = document.getElementById('particles');
-  const cols = ['rgba(255,45,149,0.35)','rgba(155,48,255,0.25)','rgba(77,124,255,0.25)','rgba(0,229,255,0.25)','rgba(255,215,0,0.3)','rgba(255,110,180,0.3)'];
-  for (let i=0;i<22;i++) {
-    const p=document.createElement('div'); p.classList.add('particle');
-    const sz=Math.random()*4+1, cl=cols[Math.floor(Math.random()*cols.length)], dur=Math.random()*20+15;
-    p.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;background:${cl};box-shadow:0 0 ${sz*3}px ${cl};animation-duration:${dur}s;animation-delay:-${Math.random()*dur}s;`;
-    ct.appendChild(p);
+class ParticleSystem {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.particles = [];
+    this.mouse = { x: -1000, y: -1000 };
+    this.resize();
+    this.init();
+    window.addEventListener('resize', () => { this.resize(); this.init(); });
+    window.addEventListener('mousemove', (e) => {
+      this.mouse.x = e.clientX;
+      this.mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseleave', () => {
+      this.mouse.x = -1000;
+      this.mouse.y = -1000;
+    });
+  }
+
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  init() {
+    this.particles = [];
+    const count = PERF.isLow ? 30 : (PERF.isMobile ? 50 : 80);
+    const colors = [
+      { r:255, g:45, b:149 },  // pink
+      { r:155, g:48, b:255 },  // purple
+      { r:77, g:124, b:255 },  // blue
+      { r:0, g:229, b:255 },   // cyan
+      { r:255, g:215, b:0 },   // gold
+      { r:255, g:110, b:180 }, // rose
+      { r:200, g:200, b:255 }, // light blue
+    ];
+    for (let i = 0; i < count; i++) {
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        size: Math.random() * 2.5 + 0.5,
+        opacity: Math.random() * 0.5 + 0.15,
+        color: c,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinkleOffset: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  update(time) {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const mouseRepelRadius = 120;
+    const mouseRepelForce = 0.8;
+    const connectionDist = PERF.isMobile ? 0 : 100; // no connections on mobile
+
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+
+      // Mouse repulsion
+      const dx = p.x - this.mouse.x;
+      const dy = p.y - this.mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < mouseRepelRadius && dist > 0) {
+        const force = (1 - dist / mouseRepelRadius) * mouseRepelForce;
+        p.vx += (dx / dist) * force;
+        p.vy += (dy / dist) * force;
+      }
+
+      // Damping
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+
+      // Ensure minimum movement
+      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (speed < 0.1) {
+        p.vx += (Math.random() - 0.5) * 0.05;
+        p.vy += (Math.random() - 0.5) * 0.05;
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Wrap
+      if (p.x < -10) p.x = this.canvas.width + 10;
+      if (p.x > this.canvas.width + 10) p.x = -10;
+      if (p.y < -10) p.y = this.canvas.height + 10;
+      if (p.y > this.canvas.height + 10) p.y = -10;
+
+      // Twinkle
+      const twinkle = Math.sin(time * p.twinkleSpeed + p.twinkleOffset) * 0.5 + 0.5;
+      const alpha = p.opacity * (0.4 + twinkle * 0.6);
+
+      // Draw particle
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      this.ctx.fillStyle = `rgba(${p.color.r},${p.color.g},${p.color.b},${alpha})`;
+      this.ctx.fill();
+
+      // Soft glow
+      if (p.size > 1.2 && !PERF.isLow) {
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+        this.ctx.fillStyle = `rgba(${p.color.r},${p.color.g},${p.color.b},${alpha * 0.08})`;
+        this.ctx.fill();
+      }
+
+      // Constellation connections (desktop only)
+      if (connectionDist > 0) {
+        for (let j = i + 1; j < this.particles.length; j++) {
+          const p2 = this.particles[j];
+          const cdx = p.x - p2.x;
+          const cdy = p.y - p2.y;
+          const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+          if (cdist < connectionDist) {
+            const lineAlpha = (1 - cdist / connectionDist) * 0.12 * alpha;
+            this.ctx.beginPath();
+            this.ctx.moveTo(p.x, p.y);
+            this.ctx.lineTo(p2.x, p2.y);
+            this.ctx.strokeStyle = `rgba(${p.color.r},${p.color.g},${p.color.b},${lineAlpha})`;
+            this.ctx.lineWidth = 0.5;
+            this.ctx.stroke();
+          }
+        }
+      }
+    }
   }
 }
 
 // ===========================
-// PASSWORD SCREEN
+// SHOOTING STARS
+// ===========================
+class ShootingStars {
+  constructor() {
+    this.stars = [];
+    this.lastSpawn = 0;
+    this.interval = 4000 + Math.random() * 6000; // 4-10 seconds between shoots
+  }
+
+  update(time, ctx, w, h) {
+    // Spawn new shooting star
+    if (time - this.lastSpawn > this.interval) {
+      this.lastSpawn = time;
+      this.interval = 3000 + Math.random() * 7000;
+      this.stars.push({
+        x: Math.random() * w * 0.8,
+        y: Math.random() * h * 0.3,
+        vx: 4 + Math.random() * 6,
+        vy: 2 + Math.random() * 3,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.012,
+        length: 40 + Math.random() * 60,
+        width: 1 + Math.random() * 1.5,
+        color: Math.random() > 0.5 ? '255,224,102' : '200,200,255'
+      });
+    }
+
+    // Update & draw
+    for (let i = this.stars.length - 1; i >= 0; i--) {
+      const s = this.stars[i];
+      s.x += s.vx;
+      s.y += s.vy;
+      s.life -= s.decay;
+
+      if (s.life <= 0) {
+        this.stars.splice(i, 1);
+        continue;
+      }
+
+      const tailX = s.x - s.vx * s.length / Math.sqrt(s.vx*s.vx + s.vy*s.vy) * 0.5;
+      const tailY = s.y - s.vy * s.length / Math.sqrt(s.vx*s.vx + s.vy*s.vy) * 0.5;
+
+      const grad = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
+      grad.addColorStop(0, `rgba(${s.color},0)`);
+      grad.addColorStop(0.6, `rgba(${s.color},${s.life * 0.3})`);
+      grad.addColorStop(1, `rgba(${s.color},${s.life * 0.8})`);
+
+      ctx.beginPath();
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = s.width * s.life;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Head glow
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.width * 2 * s.life, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${s.color},${s.life * 0.5})`;
+      ctx.fill();
+    }
+  }
+}
+
+// ===========================
+// PASSWORD SCREEN — ENHANCED
 // ===========================
 const CORRECT_PASSWORD = "2026*";
 
@@ -96,13 +302,46 @@ function initPassword() {
   const input = document.getElementById('passwordInput');
   const btn = document.getElementById('passwordBtn');
   const error = document.getElementById('passwordError');
+  const card = document.getElementById('passwordCard');
+
+  // 3D Parallax tilt on mouse move
+  if (!PERF.isMobile) {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `perspective(800px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(800px) rotateY(0deg) rotateX(0deg)';
+    });
+  }
+
+  // Ripple effect on button
+  btn.addEventListener('click', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.classList.add('ripple');
+    ripple.style.left = (e.clientX - rect.left) + 'px';
+    ripple.style.top = (e.clientY - rect.top) + 'px';
+    ripple.style.width = ripple.style.height = Math.max(rect.width, rect.height) + 'px';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
 
   function tryPassword() {
     if (input.value === CORRECT_PASSWORD) {
       error.classList.remove('visible');
-      screen.classList.add('hidden');
-      startMusic(); // user gesture -> allowed to play audio
-      setTimeout(() => startWelcome(), 600);
+      card.classList.add('success');
+
+      // Success particle explosion
+      createSuccessExplosion(card);
+
+      setTimeout(() => {
+        screen.classList.add('hidden');
+        startMusic(); // user gesture -> allowed to play audio
+        setTimeout(() => startWelcome(), 600);
+      }, 800);
     } else {
       error.classList.add('visible');
       input.value = '';
@@ -116,8 +355,52 @@ function initPassword() {
   input.focus();
 }
 
+// Success explosion particles
+function createSuccessExplosion(card) {
+  const container = document.createElement('div');
+  container.classList.add('success-particles');
+  document.body.appendChild(container);
+
+  const rect = card.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const colors = ['#ffd700', '#ff2d95', '#9b30ff', '#ffe066', '#ff6b8a', '#00e5ff'];
+
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.classList.add('success-particle');
+    const angle = (Math.PI * 2 * i) / 40 + (Math.random() - 0.5) * 0.5;
+    const velocity = 80 + Math.random() * 160;
+    const size = 3 + Math.random() * 5;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    p.style.cssText = `
+      left: ${cx}px; top: ${cy}px;
+      width: ${size}px; height: ${size}px;
+      background: ${color};
+      box-shadow: 0 0 ${size * 2}px ${color};
+      border-radius: 50%;
+    `;
+    container.appendChild(p);
+
+    const dx = Math.cos(angle) * velocity;
+    const dy = Math.sin(angle) * velocity;
+
+    p.animate([
+      { transform: 'translate(0,0) scale(1)', opacity: 1 },
+      { transform: `translate(${dx}px,${dy}px) scale(0)`, opacity: 0 }
+    ], {
+      duration: 800 + Math.random() * 400,
+      easing: 'cubic-bezier(0.25,0.46,0.45,0.94)',
+      fill: 'forwards'
+    });
+  }
+
+  setTimeout(() => container.remove(), 1500);
+}
+
 // ===========================
-// WELCOME ANIMATION
+// WELCOME ANIMATION — CINEMATIC
 // ===========================
 function buildLetterCards() {
   const container = document.getElementById('nameLetters');
@@ -135,19 +418,108 @@ function buildLetterCards() {
   });
 }
 
+// Typewriter effect for welcome text
+function typewriterEffect(element, text, speed = 80) {
+  return new Promise(resolve => {
+    element.textContent = '';
+    element.style.borderRight = '2px solid rgba(255,224,102,0.8)';
+    element.style.animation = 'none'; // pause shimmer during typewrite
+    let i = 0;
+    const blinkInterval = setInterval(() => {
+      element.style.borderColor = element.style.borderColor === 'transparent' ? 'rgba(255,224,102,0.8)' : 'transparent';
+    }, 500);
+
+    const type = () => {
+      if (i < text.length) {
+        element.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      } else {
+        clearInterval(blinkInterval);
+        element.style.borderRight = 'none';
+        resolve();
+      }
+    };
+    type();
+  });
+}
+
+// Build constellation lines between letter cards
+function buildConstellation() {
+  const svg = document.getElementById('constellationSvg');
+  if (!svg) return;
+
+  const cards = document.querySelectorAll('.letter-card.revealed');
+  if (cards.length < 2) return;
+
+  const contentRect = document.getElementById('welcomeContent').getBoundingClientRect();
+  svg.setAttribute('width', contentRect.width);
+  svg.setAttribute('height', contentRect.height);
+  svg.style.width = contentRect.width + 'px';
+  svg.style.height = contentRect.height + 'px';
+  svg.innerHTML = '';
+
+  const positions = [];
+  cards.forEach(card => {
+    const rect = card.getBoundingClientRect();
+    positions.push({
+      x: rect.left + rect.width / 2 - contentRect.left,
+      y: rect.top + rect.height / 2 - contentRect.top
+    });
+  });
+
+  // Connect sequential letters
+  for (let i = 0; i < positions.length - 1; i++) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', positions[i].x);
+    line.setAttribute('y1', positions[i].y);
+    line.setAttribute('x2', positions[i + 1].x);
+    line.setAttribute('y2', positions[i + 1].y);
+    line.style.animationDelay = `${i * 0.2}s`;
+    svg.appendChild(line);
+  }
+
+  // Add a few extra cross-connections for the constellation look
+  const extras = [[0, 3], [2, 5], [4, 7], [1, 6]];
+  extras.forEach(([a, b]) => {
+    if (a < positions.length && b < positions.length) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', positions[a].x);
+      line.setAttribute('y1', positions[a].y);
+      line.setAttribute('x2', positions[b].x);
+      line.setAttribute('y2', positions[b].y);
+      line.style.animationDelay = `${(positions.length + a) * 0.15}s`;
+      svg.appendChild(line);
+    }
+  });
+
+  setTimeout(() => svg.classList.add('visible'), 100);
+}
+
 function startWelcome() {
   const screen = document.getElementById('welcomeScreen');
   const text = document.getElementById('welcomeText');
   const cards = document.querySelectorAll('.letter-card');
 
   screen.classList.add('active');
-  setTimeout(() => text.classList.add('visible'), 300);
+
+  // Typewriter then shimmer
+  setTimeout(async () => {
+    text.classList.add('visible');
+    await typewriterEffect(text, 'Bienvenida', 100);
+    // Re-enable shimmer animation after typewriter
+    text.style.animation = '';
+  }, 300);
 
   cards.forEach((card, i) => {
-    setTimeout(() => card.classList.add('revealed'), 1200 + i * 220);
+    setTimeout(() => card.classList.add('revealed'), 1800 + i * 220);
   });
 
-  const totalTime = 1200 + (cards.length - 1) * 220 + 700 + 2500;
+  // Build constellation after all cards revealed
+  const constellationTime = 1800 + (cards.length - 1) * 220 + 600;
+  setTimeout(() => buildConstellation(), constellationTime);
+
+  const totalTime = 1800 + (cards.length - 1) * 220 + 700 + 2800;
   setTimeout(() => {
     screen.classList.add('fade-out');
     showGalaxy();
@@ -329,6 +701,47 @@ function buildRaccoon() {
   return g;
 }
 
+// ---- Nebula volume planes ----
+function buildNebulaPlanes() {
+  const G = Galaxy;
+  const nebulaGroup = new THREE.Group();
+  const nebulaColors = [
+    { inner: 'rgba(255,45,149,0.06)', outer: 'rgba(255,45,149,0)' },
+    { inner: 'rgba(155,48,255,0.05)', outer: 'rgba(155,48,255,0)' },
+    { inner: 'rgba(255,215,0,0.04)', outer: 'rgba(255,215,0,0)' },
+    { inner: 'rgba(77,124,255,0.04)', outer: 'rgba(77,124,255,0)' },
+  ];
+
+  nebulaColors.forEach((nc, i) => {
+    const tex = radialTexture(nc.inner, nc.outer);
+    const mat = new THREE.SpriteMaterial({
+      map: tex, blending: THREE.AdditiveBlending,
+      transparent: true, depthWrite: false, opacity: 0.7
+    });
+    const sprite = new THREE.Sprite(mat);
+    const scale = 18 + i * 6;
+    sprite.scale.setScalar(scale);
+    sprite.position.set(
+      (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 6,
+      (Math.random() - 0.5) * 10
+    );
+    nebulaGroup.add(sprite);
+  });
+
+  G.scene.add(nebulaGroup);
+  G.nebulaGroup = nebulaGroup;
+  G.nebulaItems = nebulaGroup.children.map((sprite, i) => ({
+    sprite,
+    baseX: sprite.position.x,
+    baseY: sprite.position.y,
+    baseZ: sprite.position.z,
+    speed: 0.1 + Math.random() * 0.2,
+    phase: Math.random() * Math.PI * 2,
+    idx: i
+  }));
+}
+
 function initGalaxyThree() {
   const canvas = document.getElementById('galaxyCanvas');
   const G = Galaxy;
@@ -397,6 +810,11 @@ function initGalaxyThree() {
   // ---- Cosmic dust (floating glowing particles) ----
   buildDust();
 
+  // ---- Volumetric nebula planes ----
+  if (!PERF.isLow) {
+    buildNebulaPlanes();
+  }
+
   // ---- Flowers as billboard sprites ----
   buildFlowerSprites();
 
@@ -411,7 +829,7 @@ function initGalaxyThree() {
 
 function buildStarPoints() {
   const G = Galaxy;
-  const N = 900;
+  const N = PERF.isLow ? 500 : 1000;
   const pos = new Float32Array(N * 3);
   const col = new Float32Array(N * 3);
   const palette = [
@@ -444,7 +862,7 @@ function buildStarPoints() {
 
 function buildDust() {
   const G = Galaxy;
-  const N = 120;
+  const N = PERF.isLow ? 60 : 140;
   const tex = radialTexture('rgba(255,210,240,0.9)', 'rgba(255,150,210,0)');
   const dust = new THREE.Group();
   const colors = [0xff8fce, 0xffd700, 0x8ad8ff, 0xc08aff, 0xffffff];
@@ -519,7 +937,10 @@ function buildFlowerSprites() {
         sprite, glow, mat, flower,
         baseAngle, radius: orbit.radius, speed: orbit.speed,
         yamp: orbit.yamp, yphase: Math.random() * Math.PI * 2,
-        baseScale, curScale: baseScale, targetScale: baseScale, opacity: 0
+        baseScale, curScale: baseScale, targetScale: baseScale, opacity: 0,
+        // Trail data
+        trail: [],
+        trailMax: PERF.isLow ? 0 : 8
       });
     }
   });
@@ -713,8 +1134,8 @@ function renderGalaxy() {
     f.targetScale = (G.hovered === f) ? f.baseScale * 1.45 : f.baseScale;
     f.curScale += (f.targetScale - f.curScale) * 0.18;
     f.sprite.scale.setScalar(f.curScale);
-    f.glow.scale.setScalar(f.curScale * 1.7 + (G.hovered === f ? 0.6 : 0));
-    f.glow.material.opacity = (G.hovered === f ? 0.9 : 0.55) * f.opacity;
+    f.glow.scale.setScalar(f.curScale * 1.7 + (G.hovered === f ? 0.8 : 0));
+    f.glow.material.opacity = (G.hovered === f ? 0.95 : 0.55) * f.opacity;
   });
 
   // raccoon idle: bob, gentle sway, blink — always keeps its cute face toward the camera
@@ -731,8 +1152,17 @@ function renderGalaxy() {
 
   // core glow pulse
   if (G.coreGlow) {
-    const s = 9 + Math.sin(t * 1.5) * 0.6;
+    const s = 9 + Math.sin(t * 1.5) * 0.8;
     G.coreGlow.scale.setScalar(s);
+  }
+
+  // nebula drift
+  if (G.nebulaItems) {
+    G.nebulaItems.forEach(n => {
+      n.sprite.position.x = n.baseX + Math.sin(t * n.speed + n.phase) * 3;
+      n.sprite.position.y = n.baseY + Math.cos(t * n.speed * 0.7 + n.phase) * 2;
+      n.sprite.material.opacity = 0.5 + Math.sin(t * 0.3 + n.phase) * 0.2;
+    });
   }
 
   // dust drift + twinkle
@@ -837,9 +1267,13 @@ function initMusic() {
 }
 
 // ===========================
-// MODAL
+// MODAL — ENHANCED WITH NAV
 // ===========================
+let currentFlowerIndex = -1;
+
 function openModal(flower) {
+  currentFlowerIndex = FLOWERS.findIndex(f => f.id === flower.id);
+
   const overlay = document.getElementById('modalOverlay');
   document.getElementById('modalImage').src = flower.image;
   document.getElementById('modalImage').alt = flower.name;
@@ -847,6 +1281,10 @@ function openModal(flower) {
   document.getElementById('modalScientific').textContent = flower.scientific;
   document.getElementById('modalDescription').textContent = flower.description;
   document.getElementById('modalTags').innerHTML = flower.tags.map(t => `<span class="modal-tag">${t}</span>`).join('');
+
+  // Counter
+  const counter = document.getElementById('modalCounter');
+  if (counter) counter.textContent = `${currentFlowerIndex + 1} / ${FLOWERS.length}`;
 
   const badge = document.getElementById('modalBadge');
   if (flower.li !== null && flower.li !== undefined) {
@@ -858,11 +1296,45 @@ function openModal(flower) {
   } else {
     badge.style.display = 'none';
   }
+
+  // Update nav buttons
+  updateModalNav();
+
   overlay.classList.add('active');
+}
+
+function updateModalNav() {
+  const prevBtn = document.getElementById('modalPrev');
+  const nextBtn = document.getElementById('modalNext');
+  if (prevBtn) {
+    prevBtn.style.opacity = currentFlowerIndex > 0 ? '1' : '0.3';
+    prevBtn.style.pointerEvents = currentFlowerIndex > 0 ? 'auto' : 'none';
+  }
+  if (nextBtn) {
+    nextBtn.style.opacity = currentFlowerIndex < FLOWERS.length - 1 ? '1' : '0.3';
+    nextBtn.style.pointerEvents = currentFlowerIndex < FLOWERS.length - 1 ? 'auto' : 'none';
+  }
+}
+
+function navigateFlower(direction) {
+  const newIndex = currentFlowerIndex + direction;
+  if (newIndex < 0 || newIndex >= FLOWERS.length) return;
+
+  // Subtle transition effect
+  const modal = document.getElementById('modal');
+  modal.style.opacity = '0';
+  modal.style.transform = `scale(0.95) translateX(${direction * 20}px)`;
+
+  setTimeout(() => {
+    openModal(FLOWERS[newIndex]);
+    modal.style.opacity = '1';
+    modal.style.transform = 'scale(1) translateX(0)';
+  }, 200);
 }
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('active');
+  currentFlowerIndex = -1;
 }
 
 function initModalEvents() {
@@ -870,15 +1342,46 @@ function initModalEvents() {
   document.getElementById('modalOverlay').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeModal();
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // Navigation buttons
+  const prevBtn = document.getElementById('modalPrev');
+  const nextBtn = document.getElementById('modalNext');
+  if (prevBtn) prevBtn.addEventListener('click', () => navigateFlower(-1));
+  if (nextBtn) nextBtn.addEventListener('click', () => navigateFlower(1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'ArrowLeft' && currentFlowerIndex >= 0) navigateFlower(-1);
+    if (e.key === 'ArrowRight' && currentFlowerIndex >= 0) navigateFlower(1);
+  });
 }
 
 // ===========================
-// 2D STAR ANIMATION LOOP
+// COMBINED ANIMATION LOOP
 // ===========================
-function initAnimationLoop(sf) {
+function initAnimationLoop(sf, ps, ss) {
+  const pCanvas = document.getElementById('particlesCanvas');
+  const pCtx = pCanvas ? pCanvas.getContext('2d') : null;
   const t0 = performance.now();
-  (function loop(ts) { sf.update(ts - t0); requestAnimationFrame(loop); })(t0);
+
+  function loop(ts) {
+    const elapsed = ts - t0;
+
+    // Star field background
+    sf.update(elapsed);
+
+    // Canvas particles
+    if (ps) ps.update(elapsed);
+
+    // Shooting stars — draw on particles canvas
+    if (ss && pCtx) {
+      ss.update(elapsed, pCtx, pCanvas.width, pCanvas.height);
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
 }
 
 // ===========================
@@ -886,8 +1389,22 @@ function initAnimationLoop(sf) {
 // ===========================
 function init() {
   const sf = new StarField(document.getElementById('starsCanvas'));
-  initAnimationLoop(sf);
-  createParticles();
+
+  // Canvas-based particles (replaces CSS particles)
+  const pCanvas = document.getElementById('particlesCanvas');
+  let ps = null;
+  if (pCanvas) {
+    ps = new ParticleSystem(pCanvas);
+  }
+
+  // Shooting stars
+  const ss = PERF.isLow ? null : new ShootingStars();
+
+  // Remove old CSS particles container content (keep element for fallback)
+  const oldParticles = document.getElementById('particles');
+  if (oldParticles) oldParticles.style.display = 'none';
+
+  initAnimationLoop(sf, ps, ss);
 
   buildLetterCards();
   initSpeedSlider();
